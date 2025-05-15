@@ -110,10 +110,10 @@
                                     {{ $plate->plate_number ?? 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ optional($plate->timestamp)->format('Y-m-d') ?? 'N/A' }}
+                                    {{ $plate->timestamp ? date('Y-m-d', strtotime($plate->timestamp)) : 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ optional($plate->timestamp)->format('H:i:s') ?? 'N/A' }}
+                                    {{ $plate->timestamp ? date('H:i:s', strtotime($plate->timestamp)) : 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $plate->car_color ?? 'N/A' }}
