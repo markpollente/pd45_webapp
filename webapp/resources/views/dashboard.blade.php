@@ -105,15 +105,15 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($recentPlates as $plate)
-                                <tr class="@if(isset($plate->security_match) && $plate->security_match === false) bg-red-200 hover:bg-red-300 animate-pulse @elseif($plate->detected == 1) bg-red-50 hover:bg-red-100 @elseif($plate->detected == 0) bg-blue-50 hover:bg-blue-100 @else hover:bg-gray-50 @endif">
+                                
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                     {{ $plate->plate_number ?? 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ optional($plate->date_time_scanned)->format('Y-m-d') ?? 'N/A' }}
+                                    {{ optional($plate->timestamp)->format('Y-m-d') ?? 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ optional($plate->date_time_scanned)->format('H:i:s') ?? 'N/A' }}
+                                    {{ optional($plate->timestamp)->format('H:i:s') ?? 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $plate->car_color ?? 'N/A' }}
@@ -125,19 +125,19 @@
                                     {{ $plate->face_name ?? 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $plate->login_status ?? 'Logged In' }}
+                                    {{ $plate->status ?? $plate->login_status ?? 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    @if(isset($plate->security_match) && $plate->security_match === false)
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                            Security Alert
-                                        </span>
-                                    @else
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            OK
-                                        </span>
-                                    @endif
-                                </td>
+    @if((isset($plate->is_mismatch) && $plate->is_mismatch))
+        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+            Security Alert
+        </span>
+    @else
+        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+            OK
+        </span>
+    @endif
+</td>
                             </tr>
                         @empty
                                 <tr>

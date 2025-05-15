@@ -54,8 +54,8 @@ class DashboardController extends Controller
         ->orderBy('date')
         ->get();
         
-        // Get recent 10 recorded plates
-        $recentPlates = PlateNumber::orderBy('date_time_scanned', 'desc')
+        $recentPlates = DB::table('parking_records')
+            ->orderBy('timestamp', 'desc')
             ->take(10)
             ->get();
         
@@ -69,30 +69,32 @@ class DashboardController extends Controller
             'lastWeekDatahotcar'
         ));
     }
+    
     public function checkSecurityAlerts()
     {
         try {
-            // Check if security_match column exists
-            $hasSecurityMatch = Schema::hasColumn('plate_numbers', 'security_match');
+            // Query from parking_records table for mismatches
+            $securityAlerts = DB::table('parking_records')
+                ->where('is_mismatch', true)
+                ->orderBy('timestamp', 'desc')
+                ->where('timestamp', '>=', now()->subHours(24))
+                ->limit(5)
+                ->get();
             
-            // Query for alerts - limit to recent ones only (last 24 hours)
-            $query = DB::table('plate_numbers')
+            // Or if you prefer to use plate_numbers table instead
+            $plateAlerts = DB::table('plate_numbers')
+                ->where('security_match', false)
                 ->orderBy('date_time_scanned', 'desc')
-                ->where('date_time_scanned', '>=', now()->subHours(24));
+                ->where('date_time_scanned', '>=', now()->subHours(24))
+                ->limit(5)
+                ->get();
             
-            // If we have security_match column, filter by it
-            if ($hasSecurityMatch) {
-                $query->where('security_match', false);
-            } else {
-                // Otherwise, use location to identify security alerts
-                $query->where('location', 'like', '%Security Alert%');
-            }
-            
-            $securityAlerts = $query->limit(5)->get();
+            // Combine results if using both tables
+            $allAlerts = $securityAlerts->merge($plateAlerts ?? collect([]));
             
             return response()->json([
-                'alerts' => $securityAlerts,
-                'count' => $securityAlerts->count()
+                'alerts' => $allAlerts,
+                'count' => $allAlerts->count()
             ]);
         } catch (\Exception $e) {
             \Log::error('Error checking for security alerts: ' . $e->getMessage());

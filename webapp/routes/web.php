@@ -107,36 +107,23 @@ Route::put('/security/resolve/{alertId}', [SecurityController::class, 'resolveAl
 Route::post('/security/check-plate', [SecurityController::class, 'checkPlate'])->name('security.check-plate');
 Route::get('/check-security-alerts', [DashboardController::class, 'checkSecurityAlerts'])->name('dashboard.checkSecurityAlerts');
 
-Route::get('/test-security-alert-fixed', function() {
+Route::get('/test-security-alert', function() {
     try {
-        // Insert a test plate with only the columns that exist
-        $plateId = DB::table('plate_numbers')->insertGetId([
-            'plate_number' => 'SECURITY-112',
-            'date_time_scanned' => now(),
-            'detected' => 1, // Using 1 for true
-            'created_at' => now(),
-            'updated_at' => now(),
-            'location' => 'Security Alert - Unauthorized Driver'
+        DB::table('parking_records')->insert([
+            'plate_number' => 'TEST-' . rand(100, 999),
+            'vehicle_type' => 'sedan',
+            'car_color' => 'Black',
+            'face_name' => 'Unauthorized Person',
+            'status' => 'OUT',
+            'timestamp' => now(),
+            'is_mismatch' => true,
+            'mismatch_reason' => 'mismatch boi'
         ]);
         
-        // Also add security_match column if it's missing
-        if (!Schema::hasColumn('plate_numbers', 'security_match')) {
-            Schema::table('plate_numbers', function($table) {
-                $table->boolean('security_match')->default(true)->after('detected');
-            });
-            
-            // After adding the column, update this record
-            DB::table('plate_numbers')
-                ->where('id', $plateId)
-                ->update(['security_match' => false]);
-        }
-        
-        return redirect('/dashboard')->with('status', 'Test security alert created with ID: ' . $plateId);
+        return redirect('/dashboard')->with('status', 'test working');
     } catch (\Exception $e) {
         return response()->json([
-            'error' => $e->getMessage(),
-            'line' => $e->getLine(),
-            'file' => $e->getFile()
+            'error' => $e->getMessage()
         ], 500);
     }
 });
